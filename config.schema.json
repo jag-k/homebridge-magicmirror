@@ -1,7 +1,7 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
-  "pluginType": "platform",
-  "singular": true,
+  "pluginAlias": "MagicMirror",
+  "pluginType": "accessory",
+  "singular": false,
   "schema": {
     "type": "object",
     "properties": {
@@ -9,7 +9,48 @@
         "title": "Name",
         "type": "string",
         "required": true,
-        "default": "Example Dynamic Platform"
+        "default": "MagicMirror",
+        "description": "The name that will appear in the Home App and your homebridge log."
+      },
+      "remoteURL": {
+        "title": "MagicMirror URL",
+        "type": "string",
+        "required": true,
+        "format": "uri",
+        "placeholder": "http://192.168.xxx.xxx:8080",
+        "description": "URL to <a href='https://github.com/Jopyth/MMM-Remote-Control'>MMM-Remote-Control</a>"
+      },
+      "apiKey": {
+        "title": "API key for Remote Control",
+        "type": "string",
+        "placeholder": "bc2e979db92f4741afad01d5d18eb8e2",
+        "description": "If you using <a href='https://github.com/Jopyth/MMM-Remote-Control/blob/master/API/README.md#authentication'>Authentication</a> to connect Remote Control API."
+      },
+      "useRealMonitorDisabling": {
+        "title": "Use real disabling monitor",
+        "type": "boolean",
+        "default": false,
+        "description": "Use monitor on/off when click on MagicMirror. If unchecked, when disable your mirror in HomeKit monitor will set brightness to 10"
+      },
+      "monitorSwitcher": {
+        "title": "Add monitor switch",
+        "type": "boolean",
+        "default": false,
+        "description": "Use monitor on/off when click on MagicMirror. If unchecked, disabling "
+      },
+      "model": {
+        "title": "Model",
+        "type": "string",
+        "required": false,
+        "placeholder": "MagicMirror",
+        "description": "The Model that will appears for your accessory in the Home app."
+      },
+      "manufacturer": {
+        "title": "Manufacturer",
+        "type": "string",
+        "required": false,
+        "placeholder": "Raspberry Pi Model 3",
+        "description": "The Manufacturer that will appears for your accessory in the Home app."
       }
     }
   }

@@ -1,9 +1,14 @@
-/**
- * This is the name of the platform that users will use to register the plugin in the Homebridge config.json
- */
-export const PLATFORM_NAME = 'ExampleHomebridgePlugin';
+import {AccessoryConfig} from 'homebridge';
 
-/**
- * This must match the name of your plugin as defined the package.json
- */
-export const PLUGIN_NAME = 'homebridge-plugin-name';
+export const ACCESSORY_NAME = 'MagicMirror';
+
+export interface Config extends AccessoryConfig {
+  name: string;
+  remoteURL: string;
+  apiKey?: string;
+  useRealMonitorDisabling?: boolean;
+  monitorSwitcher?: boolean;
+  model?: string;
+  manufacturer?: string;
+}
+
