@@ -1,6 +1,6 @@
 {
   "name": "homebridge-magicmirror",
-  "version": "0.0.2-beta.0",
+  "version": "1.0.0",
   "displayName": "Homebridge MagicMirror",
   "description": "Add your MagicMirror in Apple HomeKit",
   "license": "Apache-2.0",
