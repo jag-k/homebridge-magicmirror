@@ -36,7 +36,16 @@
         "title": "Add monitor switch",
         "type": "boolean",
         "default": false,
-        "description": "Use monitor on/off when click on MagicMirror. If unchecked, disabling "
+        "description": "You can disable monitor input with this switcher (recommended using without <i>real disabling monitor</i>)"
+      },
+      "moduleList": {
+        "title": "List of MagicMirror Module name",
+        "type": "array",
+        "items": {
+          "title": "MMM Name",
+          "type": "string"
+        },
+        "description": "Name of each MagicMirror Module to switch on/off"
       },
       "model": {
         "title": "Model",

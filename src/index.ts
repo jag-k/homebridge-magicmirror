@@ -10,9 +10,9 @@ import {
   Logging,
   Service,
 } from 'homebridge';
-import {ACCESSORY_NAME, Config} from './settings';
+import {ACCESSORY_NAME, Config, MMMConfig, MMRemoteResponse} from './settings';
 import {author} from '../package.json';
-import {BaseActions, brightnessConvertFromHomeKit, brightnessConvertToHomeKit} from './helpers';
+import {any, BaseActions, brightnessConvertFromHomeKit, brightnessConvertToHomeKit, mmmName} from './helpers';
 
 let hap: HAP;
 
@@ -36,13 +36,13 @@ class Actions extends BaseActions {
 
   getBrightness = this.getter(
     '/api/brightness',
-    data => brightnessConvertToHomeKit(data.result),
+    data => brightnessConvertToHomeKit(data.result as number),
     'Current brightness:',
   );
 
   getBrightnessBoolean = this.getter(
     '/api/brightness',
-    data => brightnessConvertToHomeKit(data.result) > 0,
+    data => brightnessConvertToHomeKit(data.result as number) > 0,
     'Current brightness (boolean):',
   );
 
@@ -52,7 +52,17 @@ class Actions extends BaseActions {
     (value) => `Brightness set to ${value} (${brightnessConvertToHomeKit(value)}%)`,
   );
 
+  getMMMState = (name: string) => this.getter<MMRemoteResponse<MMMConfig[]>>(
+    `/api/module/${name}`,
+    (data) => !any((data.data as MMMConfig[]).map(m => m.hidden)),
+    `Current showing state of '${name}':`,
+  );
 
+  setMMMState = (name: string) => this.setter<boolean, string>(
+    `/api/module/${name}`,
+    (value) => value ? 'show' : 'hide',
+    `'${name}' state was set to`,
+  );
 }
 
 class MagicMirror implements AccessoryPlugin {
@@ -94,12 +104,23 @@ class MagicMirror implements AccessoryPlugin {
       this.services.push(mmMonitor);
     }
 
+    for (const name of this.config.moduleList) {
+      const displayName = mmmName(name);
+      const mmmSwitcher = new hap.Service.Switch(displayName, name);
+      mmmSwitcher
+        .getCharacteristic(hap.Characteristic.On)
+        .on(CharacteristicEventTypes.GET, this.getMMMState(name).bind(this))
+        .on(CharacteristicEventTypes.SET, this.setMMMState(name).bind(this));
+      this.services.push(mmmSwitcher);
+      this.log(`Added ${this.services.length} '${displayName}' (${name}: ${mmmSwitcher.UUID}) module control`);
+    }
+
     const informationService = new hap.Service.AccessoryInformation()
       .setCharacteristic(hap.Characteristic.Manufacturer, this.config.manufacturer || author.name)
       .setCharacteristic(hap.Characteristic.Model, this.config.model || 'MagicMirror');
 
-    log.info('MagicMirror finished initializing!');
     this.services.push(informationService);
+    log.info('MagicMirror finished initializing!');
   }
 
   identify(): void {
@@ -108,24 +129,24 @@ class MagicMirror implements AccessoryPlugin {
   }
 
   getServices(): Service[] {
-    this.log.warn(JSON.stringify(this.config));
+    this.log.warn(`Services count: ${this.services.length}`);
     return this.services;
   }
 
   onGet(callback: CharacteristicGetCallback): void {
     if (this.config.useRealMonitorDisabling) {
-      this.actions.getMonitorStatus(callback, 'onGet.Monitor');
+      this.actions.getMonitorStatus(callback, 'Monitor');
     } else {
-      this.actions.getBrightnessBoolean(callback, 'onGet.Brightness');
+      this.actions.getBrightnessBoolean(callback, 'Brightness');
     }
   }
 
 
   onSet(value: CharacteristicValue, callback: CharacteristicSetCallback): void {
     if (this.config.useRealMonitorDisabling) {
-      this.actions.setMonitorStatus(value as boolean, callback, 'onSet.Monitor');
+      this.actions.setMonitorStatus(value as boolean, callback, 'Monitor');
     } else {
-      this.actions.setBrightness(value ? (this.brightness || 100) : 0, callback, 'onSet.Brightness');
+      this.actions.setBrightness(value ? (this.brightness || 100) : 0, callback, 'Brightness');
     }
   }
 
@@ -151,5 +172,14 @@ class MagicMirror implements AccessoryPlugin {
     this.brightness = value as number;
     this.actions.setBrightness(value as number, callback, 'brightnessSet');
   }
+
+
+  getMMMState = (name: string) =>
+    (callback: CharacteristicSetCallback): void =>
+      this.actions.getMMMState(name)(callback, name);
+
+  setMMMState = (name: string) =>
+    (value: CharacteristicValue, callback: CharacteristicSetCallback): void =>
+      this.actions.setMMMState(name)(value as boolean, callback, name);
 
 }
